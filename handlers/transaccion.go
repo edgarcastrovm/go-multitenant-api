@@ -13,7 +13,10 @@ import (
 // Listar todas las transacciones
 func GetTransacciones(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	transacciones := data.GetTransacciones()
+	transacciones, err := data.GetTransacciones()
+	if err != nil {
+		http.Error(w, "Error obteniendo las transacciones", http.StatusInternalServerError)
+	}
 	json.NewEncoder(w).Encode(transacciones)
 }
 
@@ -32,7 +35,10 @@ func CreateTransaccion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nuevaTransaccion := data.AddTransaccion(t)
+	nuevaTransaccion, err := data.AddTransaccion(t)
+	if err != nil {
+		http.Error(w, "Error agregando una transaccion", http.StatusInternalServerError)
+	}
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(nuevaTransaccion)
 }
@@ -47,7 +53,10 @@ func GetTransaccion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, found := data.GetTransaccionByID(id)
+	t, found, err := data.GetTransaccionByID(id)
+	if err != nil {
+		http.Error(w, "Error obteniendo las transacciones", http.StatusInternalServerError)
+	}
 	if !found {
 		http.Error(w, "Transacción no encontrada", http.StatusNotFound)
 		return
@@ -65,7 +74,13 @@ func DeleteTransaccion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !data.DeleteTransaccion(id) {
+	deleted, err := data.DeleteTransaccion(id)
+
+	if err != nil {
+		http.Error(w, "Error eliminando la transacción", http.StatusNotFound)
+		return
+	}
+	if deleted {
 		http.Error(w, "Transacción no encontrada", http.StatusNotFound)
 		return
 	}

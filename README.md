@@ -12,6 +12,8 @@ go run main.go
 -- Depencdencias db para postgres
 go get github.com/lib/pq
 
+go get github.com/joho/godotenv
+
 ```sql
 CREATE TABLE transacciones (
     id SERIAL PRIMARY KEY,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"my-app-tx/data"
 	"my-app-tx/handlers"
 	"net/http"
 
@@ -9,6 +10,11 @@ import (
 )
 
 func main() {
+	// Conexión a PostgreSQL
+	connStr := "host=localhost port=5432 user=postgres password=novopayment dbname=novo_db sslmode=disable"
+	if err := data.InitDB(connStr); err != nil {
+		log.Fatalf("Error conectando a la base de datos: %v", err)
+	}
 	router := mux.NewRouter()
 
 	// Definir rutas

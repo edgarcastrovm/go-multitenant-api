@@ -1,42 +1,79 @@
 package data
 
 import (
+	"database/sql"
 	"my-app-tx/models"
+
+	_ "github.com/lib/pq"
 )
 
-var transacciones []models.Transaccion
-var currentID int
+var db *sql.DB
 
-// Agrega una transacción al slice y asigna un ID incremental
-func AddTransaccion(t models.Transaccion) models.Transaccion {
-	currentID++
-	t.ID = currentID
-	transacciones = append(transacciones, t)
-	return t
+// Inicializa la conexión a PostgreSQL
+func InitDB(connStr string) error {
+	var err error
+	db, err = sql.Open("postgres", connStr)
+	if err != nil {
+		return err
+	}
+	return db.Ping()
+}
+
+// Agrega una transacción
+func AddTransaccion(t models.Transaccion) (models.Transaccion, error) {
+	query := `INSERT INTO transacciones (monto, tipo, fecha, descripcion) 
+              VALUES ($1, $2, $3, $4) RETURNING id`
+	err := db.QueryRow(query, t.Monto, t.Tipo, t.Fecha, t.Descripcion).Scan(&t.ID)
+	if err != nil {
+		return models.Transaccion{}, err
+	}
+	return t, nil
 }
 
 // Obtiene todas las transacciones
-func GetTransacciones() []models.Transaccion {
-	return transacciones
+func GetTransacciones() ([]models.Transaccion, error) {
+	query := `SELECT id, monto, tipo, fecha, descripcion FROM transacciones`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var transacciones []models.Transaccion
+	for rows.Next() {
+		var t models.Transaccion
+		if err := rows.Scan(&t.ID, &t.Monto, &t.Tipo, &t.Fecha, &t.Descripcion); err != nil {
+			return nil, err
+		}
+		transacciones = append(transacciones, t)
+	}
+	return transacciones, nil
 }
 
 // Obtiene una transacción por ID
-func GetTransaccionByID(id int) (models.Transaccion, bool) {
-	for _, t := range transacciones {
-		if t.ID == id {
-			return t, true
-		}
+func GetTransaccionByID(id int) (models.Transaccion, bool, error) {
+	query := `SELECT id, monto, tipo, fecha, descripcion FROM transacciones WHERE id = $1`
+	var t models.Transaccion
+	err := db.QueryRow(query, id).Scan(&t.ID, &t.Monto, &t.Tipo, &t.Fecha, &t.Descripcion)
+	if err == sql.ErrNoRows {
+		return models.Transaccion{}, false, nil
 	}
-	return models.Transaccion{}, false
+	if err != nil {
+		return models.Transaccion{}, false, err
+	}
+	return t, true, nil
 }
 
 // Elimina una transacción por ID
-func DeleteTransaccion(id int) bool {
-	for i, t := range transacciones {
-		if t.ID == id {
-			transacciones = append(transacciones[:i], transacciones[i+1:]...)
-			return true
-		}
+func DeleteTransaccion(id int) (bool, error) {
+	query := `DELETE FROM transacciones WHERE id = $1`
+	result, err := db.Exec(query, id)
+	if err != nil {
+		return false, err
 	}
-	return false
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return rowsAffected > 0, nil
 }
