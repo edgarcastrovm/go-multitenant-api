@@ -1,19 +1,18 @@
 package service
 
 import (
+	"context"
 	. "my-app-tx/utils/http"
 	. "my-app-tx/utils/models"
 
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 type ITrxService interface {
-	AddTrx(t *Transaction, log *logrus.Entry) (bool, ApiResponse, error)
-	GetAll(log *logrus.Entry) (bool, ApiResponse, error)
-	GetById(id *int8, log *logrus.Entry) (bool, ApiResponse, error)
-	Reverse(t *Transaction, log *logrus.Entry) (bool, ApiResponse, error)
+	AddTrx(t *Transaction, ctx context.Context) (bool, ApiResponse, error)
+	GetAll(ctx context.Context) (bool, ApiResponse, error)
+	GetById(id *int8, ctx context.Context) (bool, ApiResponse, error)
+	Reverse(t *Transaction, ctx context.Context) (bool, ApiResponse, error)
 }
 
 var trxServices = map[string]ITrxService{}

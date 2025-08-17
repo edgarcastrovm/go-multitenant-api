@@ -28,7 +28,7 @@ func InitDB(dataSourceName string) error {
 func AddTrx(t models.Transaction, tenant string) (models.Transaction, error) {
 	query := `INSERT INTO transaccion (cuenta,cuenta_destino,monto, tipo, fecha, descripcion,estado,empresa) 
               VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
-	err := db.QueryRow(query, t.Cuenta, t.Monto, t.Tipo, t.Fecha, t.Descripcion, t.Estado, t.Empresa).Scan(&t.ID)
+	err := db.QueryRow(query, t.Cuenta, t.CuentaDestino, t.Monto, t.Tipo, t.Fecha, t.Descripcion, t.Estado, t.Empresa).Scan(&t.ID)
 	if err != nil {
 		return models.Transaction{}, err
 	}
@@ -48,7 +48,7 @@ func GetTrx(tenant string) ([]models.Transaction, error) {
 	var lstTrx []models.Transaction
 	for rows.Next() {
 		var t models.Transaction
-		if err := rows.Scan(&t.ID, &t.Cuenta, &t.Monto, &t.Tipo, &t.Fecha, &t.Descripcion, &t.Estado, &t.Empresa); err != nil {
+		if err := rows.Scan(&t.ID, &t.Cuenta, &t.CuentaDestino, &t.Monto, &t.Tipo, &t.Fecha, &t.Descripcion, &t.Estado, &t.Empresa); err != nil {
 			return nil, err
 		}
 		lstTrx = append(lstTrx, t)

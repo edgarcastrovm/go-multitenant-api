@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"my-app-tx/service"
 	rc "my-app-tx/utils/http"
-	. "my-app-tx/utils/middleware"
+	"my-app-tx/utils/logger"
 	"my-app-tx/utils/models"
 	"net/http"
 )
 
 // Listar todas las transacciones
 func GetTransactions(w http.ResponseWriter, r *http.Request) {
-	log := GetLogger(r)
+	ctx := r.Context()
+	log := logger.WithContext(ctx).Sugar()
 	tenant := r.Header.Get("x-tenant-id")
 	var response rc.ApiResponse
 
@@ -22,7 +23,7 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 		log.Error("TenantId invalido:", r.Header)
 		return
 	}
-	success, response, error := txService.GetAll(log)
+	success, response, error := txService.GetAll(ctx)
 	if !success {
 		log.Error("Error: no se encontraron transacciones")
 		w.WriteHeader(http.StatusNotFound)
@@ -43,7 +44,8 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 
 // Agregar una nueva transacción
 func CreateTransaction(w http.ResponseWriter, r *http.Request) {
-	log := GetLogger(r)
+	ctx := r.Context()
+	log := logger.WithContext(ctx).Sugar()
 	tenant := r.Header.Get("x-tenant-id")
 	var response rc.ApiResponse
 
@@ -56,16 +58,16 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var t models.Transaction
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-		log.WithField("error", err.Error()).Error("Error decodificando la request")
+		log.Error("Error decodificando la request")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(rc.ErrorBad(fmt.Sprintf("Error en el formato JSON: %v", err), http.StatusBadRequest))
 		return
 	}
 
 	// Insertar la transacción usando el servicio
-	insert, response, err := txService.AddTrx(&t, log)
+	insert, response, err := txService.AddTrx(&t, ctx)
 	if err != nil {
-		log.WithField("error", err.Error()).Error("Error al insertar la transacción")
+		log.Error("Error al insertar la transacción")
 		w.WriteHeader(response.Code)
 		json.NewEncoder(w).Encode(response)
 		return

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/go-ozzo/ozzo-validation/is"
 )
 
 type Transaction struct {
@@ -44,6 +43,6 @@ func (t Transaction) ValidateCreate() error {
 		validation.Field(&t.Estado, validation.Required, validation.In(STATE_TRX_ACTIVE, STATE_TRX_DELETED, STATE_TRX_REVERSED)),
 
 		// Empresa: Requerida, longitud entre 3 y 50 caracteres, alfanumérica
-		validation.Field(&t.Empresa, validation.Required, validation.Length(3, 25), is.Alphanumeric),
+		validation.Field(&t.Empresa, validation.Required, validation.Length(3, 25)),
 	)
 }

@@ -1,19 +1,32 @@
 package service
 
 import (
+	"context"
 	"my-app-tx/data"
 	"my-app-tx/utils/constants"
 	. "my-app-tx/utils/http"
+	"my-app-tx/utils/logger"
 	. "my-app-tx/utils/models"
 	"net/http"
-
-	"github.com/sirupsen/logrus"
+	"strings"
 )
 
 type BancoB struct{}
 
-func (b *BancoB) AddTrx(t *Transaction, log *logrus.Entry) (bool, ApiResponse, error) {
-	log.Info("addTrx: ", constants.BANCO_B)
+func (b *BancoB) AddTrx(t *Transaction, ctx context.Context) (bool, ApiResponse, error) {
+	log := logger.WithContext(ctx).Sugar()
+	log.Infof("addTrx: ", constants.BANCO_B)
+	t.Tipo = strings.ToUpper(t.Tipo)
+	t.Empresa = constants.BANCO_B
+
+	// Validar la transacción antes de insertarla
+	err := t.ValidateCreate()
+	if err != nil {
+		log.Error("Error guardando la transacción")
+		return false, ErrorBad("Error registrando la transacción: ", err), nil
+
+	}
+
 	newTrx, err := data.AddTrx(*t, constants.BANCO_B)
 
 	if err != nil {
@@ -24,8 +37,9 @@ func (b *BancoB) AddTrx(t *Transaction, log *logrus.Entry) (bool, ApiResponse, e
 	return true, Success(newTrx), nil
 }
 
-func (b *BancoB) GetAll(log *logrus.Entry) (bool, ApiResponse, error) {
-	log.Info("getAll: ", constants.BANCO_B)
+func (b *BancoB) GetAll(ctx context.Context) (bool, ApiResponse, error) {
+	log := logger.WithContext(ctx).Sugar()
+	log.Infof("getAll: ", constants.BANCO_B)
 	lstTrx, err := data.GetTrx(constants.BANCO_B)
 
 	if err != nil {
@@ -36,8 +50,9 @@ func (b *BancoB) GetAll(log *logrus.Entry) (bool, ApiResponse, error) {
 	return true, Success(lstTrx), nil
 }
 
-func (b *BancoB) GetById(id *int8, log *logrus.Entry) (bool, ApiResponse, error) {
-	log.Info("getById: ", constants.BANCO_B)
+func (b *BancoB) GetById(id *int8, ctx context.Context) (bool, ApiResponse, error) {
+	log := logger.WithContext(ctx).Sugar()
+	log.Infof("getById: ", constants.BANCO_B)
 	trx, exist, err := data.GetTrxByID(*id, constants.BANCO_B)
 
 	if err != nil {
@@ -53,8 +68,9 @@ func (b *BancoB) GetById(id *int8, log *logrus.Entry) (bool, ApiResponse, error)
 	return true, Success(trx), nil
 }
 
-func (b *BancoB) Reverse(t *Transaction, log *logrus.Entry) (bool, ApiResponse, error) {
-	log.Info("reverse Banco A")
+func (b *BancoB) Reverse(t *Transaction, ctx context.Context) (bool, ApiResponse, error) {
+	log := logger.WithContext(ctx).Sugar()
+	log.Infof("reverse Banco A")
 	return true, Success("reverse Banco A"), nil
 }
 

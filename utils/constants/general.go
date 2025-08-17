@@ -11,3 +11,5 @@ const STATE_TRX_REVERSED = 1
 const STATE_TRX_DELETED = 2
 
 const API_LOGKEY = "API_LOG_KEY"
+const HEADER_TENANT_ID = "x-tenant-id"
+const HEADER_REQUEST_ID = "x-request-id"

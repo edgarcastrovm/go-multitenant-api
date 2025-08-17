@@ -7,6 +7,7 @@ import (
 	ctl_gin "my-app-tx/controller/gin"
 	ctl_mux "my-app-tx/controller/mux"
 	"my-app-tx/data"
+	"my-app-tx/utils/logger"
 	md "my-app-tx/utils/middleware"
 	"net/http"
 	"os"
@@ -17,6 +18,8 @@ import (
 )
 
 func main() {
+	// Inicializar logger global
+	logger.InitLogger()
 	// Cargar variables de entorno
 	if err := godotenv.Load(); err != nil {
 		log.Println("No se encontró archivo .env")
