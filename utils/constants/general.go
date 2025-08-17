@@ -1,0 +1,13 @@
+package constants
+
+const BANCO_A = "BANCO_A"
+const BANCO_B = "BANCO_B"
+
+const TYPE_TRX_INGRESO = "INGRESO"
+const TYPE_TRX_EGRESO = "EGRESO"
+
+const STATE_TRX_ACTIVE = 0
+const STATE_TRX_REVERSED = 1
+const STATE_TRX_DELETED = 2
+
+const API_LOGKEY = "API_LOG_KEY"

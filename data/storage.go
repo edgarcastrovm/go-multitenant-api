@@ -2,7 +2,7 @@ package data
 
 import (
 	"database/sql"
-	"my-app-tx/models"
+	"my-app-tx/utils/models"
 
 	_ "github.com/lib/pq"
 )
@@ -10,63 +10,70 @@ import (
 var db *sql.DB
 
 // Inicializa la conexión a PostgreSQL
-func InitDB(connStr string) error {
+func InitDB(dataSourceName string) error {
 	var err error
-	db, err = sql.Open("postgres", connStr)
+	db, err = sql.Open("postgres", dataSourceName)
 	if err != nil {
 		return err
 	}
-	return db.Ping()
+	// Verificar que la conexión es válida
+	if err = db.Ping(); err != nil {
+		db.Close()
+		return err
+	}
+	return nil
 }
 
 // Agrega una transacción
-func AddTransaccion(t models.Transaccion) (models.Transaccion, error) {
-	query := `INSERT INTO transacciones (monto, tipo, fecha, descripcion) 
-              VALUES ($1, $2, $3, $4) RETURNING id`
-	err := db.QueryRow(query, t.Monto, t.Tipo, t.Fecha, t.Descripcion).Scan(&t.ID)
+func AddTrx(t models.Transaction, tenant string) (models.Transaction, error) {
+	query := `INSERT INTO transaccion (cuenta,cuenta_destino,monto, tipo, fecha, descripcion,estado,empresa) 
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
+	err := db.QueryRow(query, t.Cuenta, t.Monto, t.Tipo, t.Fecha, t.Descripcion, t.Estado, t.Empresa).Scan(&t.ID)
 	if err != nil {
-		return models.Transaccion{}, err
+		return models.Transaction{}, err
 	}
 	return t, nil
 }
 
-// Obtiene todas las transacciones
-func GetTransacciones() ([]models.Transaccion, error) {
-	query := `SELECT id, monto, tipo, fecha, descripcion FROM transacciones`
-	rows, err := db.Query(query)
+// Obtiene todas las Transacciones
+func GetTrx(tenant string) ([]models.Transaction, error) {
+	query := `SELECT id, cuenta,cuenta_destino, monto, tipo, fecha, descripcion,estado,empresa 
+			  FROM transaccion WHERE empresa = $1 `
+	rows, err := db.Query(query, tenant)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var transacciones []models.Transaccion
+	var lstTrx []models.Transaction
 	for rows.Next() {
-		var t models.Transaccion
-		if err := rows.Scan(&t.ID, &t.Monto, &t.Tipo, &t.Fecha, &t.Descripcion); err != nil {
+		var t models.Transaction
+		if err := rows.Scan(&t.ID, &t.Cuenta, &t.Monto, &t.Tipo, &t.Fecha, &t.Descripcion, &t.Estado, &t.Empresa); err != nil {
 			return nil, err
 		}
-		transacciones = append(transacciones, t)
+		lstTrx = append(lstTrx, t)
 	}
-	return transacciones, nil
+	return lstTrx, nil
 }
 
 // Obtiene una transacción por ID
-func GetTransaccionByID(id int) (models.Transaccion, bool, error) {
-	query := `SELECT id, monto, tipo, fecha, descripcion FROM transacciones WHERE id = $1`
-	var t models.Transaccion
-	err := db.QueryRow(query, id).Scan(&t.ID, &t.Monto, &t.Tipo, &t.Fecha, &t.Descripcion)
+func GetTrxByID(id int8, tenant string) (models.Transaction, bool, error) {
+	query := `SELECT id, cuenta, monto, tipo, fecha, descripcion,estado,empresa
+	          FROM transaccion WHERE empresa = $1 AND id = $2 `
+	var t models.Transaction
+	err := db.QueryRow(query, tenant, id).Scan(&t.ID, &t.Cuenta, &t.Monto, &t.Tipo, &t.Fecha, &t.Descripcion, &t.Estado, &t.Empresa)
 	if err == sql.ErrNoRows {
-		return models.Transaccion{}, false, nil
+		return models.Transaction{}, false, nil
 	}
 	if err != nil {
-		return models.Transaccion{}, false, err
+		return models.Transaction{}, false, err
 	}
 	return t, true, nil
 }
 
 // Elimina una transacción por ID
-func DeleteTransaccion(id int) (bool, error) {
-	query := `DELETE FROM transacciones WHERE id = $1`
+func DeleteTrx(id int, tenant string) (bool, error) {
+	query := `DELETE FROM transaccion WHERE id = $1`
 	result, err := db.Exec(query, id)
 	if err != nil {
 		return false, err
