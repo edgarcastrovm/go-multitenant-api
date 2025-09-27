@@ -203,9 +203,9 @@ curl --request POST   --url http://localhost:8080/transacciones   --header 'Cont
 
 ## 🔧 Próximas mejoras
 
+* Pruebas unitarias con `testing`.
 * Documentación OpenAPI (Swagger).
 * Implementar un ORM (GORM o SQLC).
-* Pruebas unitarias con `testing`.
 * Integración con contenedores Docker.
 * Agregar soporte a otras bases de datos (ej. Oracle).
 * CI/CD para despliegue automático.
