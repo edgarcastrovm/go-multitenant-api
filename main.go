@@ -49,8 +49,7 @@ func main() {
 		log.Fatalf("Error conectando a la base de datos: %v", err)
 	}
 
-	router_opt := flag.String("router", "mux", "Especifica enrutador: 'gorilla/mux' o 'gin'")
-
+	router_opt := flag.String("router", "gin", "Especifica el enrutador HTTP a usar: 'mux' (Gorilla Mux) o 'gin' (Gin Gonic)")
 	flag.Parse()
 
 	// Usar un switch para usar mux o gin
@@ -63,11 +62,9 @@ func main() {
 		// Definir rutas
 		router.HandleFunc("/transacciones", ctl_mux.GetTransactions).Methods("GET")
 		router.HandleFunc("/transacciones", ctl_mux.CreateTransaction).Methods("POST")
-		// router.HandleFunc("/transacciones/{id}", controller.GetTransaccion).Methods("GET")
-		// router.HandleFunc("/transacciones/{id}", controller.DeleteTransaccion).Methods("DELETE")
 
 		// Iniciar servidor
-		log.Println("Servidor corriendo en http://localhost:8080")
+		log.Println("Servidor corriendo con mux en http://localhost:8080")
 		log.Fatal(http.ListenAndServe(":8080", router))
 	case "gin":
 		// Crear enrutador de Gin
@@ -79,11 +76,9 @@ func main() {
 		// Definir rutas
 		router.GET("/transacciones", ctl_gin.GetTransactions)
 		router.POST("/transacciones", ctl_gin.CreateTransaction)
-		// router.GET("/transacciones/:id", controller.GetTransaccionGin)
-		// router.DELETE("/transacciones/:id", controller.DeleteTransaccionGin)
 
 		// Iniciar servidor
-		log.Println("Servidor corriendo en http://localhost:8080")
+		log.Println("Servidor corriendo con gin en http://localhost:8080")
 		log.Fatal(router.Run(":8080"))
 		// Aquí iría la lógica para el servidor B
 	default:
