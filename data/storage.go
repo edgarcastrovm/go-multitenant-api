@@ -24,6 +24,14 @@ func InitDB(dataSourceName string) error {
 	return nil
 }
 
+// Cierra la conexión a la base de datos
+func CloseDB() error {
+	if db != nil {
+		return db.Close()
+	}
+	return nil
+}
+
 // Agrega una transacción
 func AddTrx(t models.Transaction, tenant string) (models.Transaction, error) {
 	query := `INSERT INTO transaccion (cuenta,cuenta_destino,monto, tipo, fecha, descripcion,estado,empresa) 

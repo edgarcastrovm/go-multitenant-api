@@ -40,7 +40,7 @@ func (t Transaction) ValidateCreate() error {
 		validation.Field(&t.Descripcion, validation.Required, validation.Length(5, 100)),
 
 		// Estado: Requerido, entre 0 y 2
-		validation.Field(&t.Estado, validation.Required, validation.In(STATE_TRX_ACTIVE, STATE_TRX_DELETED, STATE_TRX_REVERSED)),
+		validation.Field(&t.Estado, validation.In(STATE_TRX_ACTIVE, STATE_TRX_DELETED, STATE_TRX_REVERSED)),
 
 		// Empresa: Requerida, longitud entre 3 y 50 caracteres, alfanumérica
 		validation.Field(&t.Empresa, validation.Required, validation.Length(3, 25)),

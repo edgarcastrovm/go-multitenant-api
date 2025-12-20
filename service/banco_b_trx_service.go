@@ -9,6 +9,7 @@ import (
 	. "my-app-tx/utils/models"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type BancoB struct{}
@@ -18,12 +19,14 @@ func (b *BancoB) AddTrx(t *Transaction, ctx context.Context) (bool, ApiResponse,
 	log.Infof("addTrx: ", constants.BANCO_B)
 	t.Tipo = strings.ToUpper(t.Tipo)
 	t.Empresa = constants.BANCO_B
+	t.Fecha = time.Now()
+	t.Estado = constants.STATE_TRX_ACTIVE
 
 	// Validar la transacción antes de insertarla
 	err := t.ValidateCreate()
 	if err != nil {
-		log.Error("Error guardando la transacción")
-		return false, ErrorBad("Error registrando la transacción: ", err), nil
+		log.Errorf("Error validando la transacción [ %v ]", err)
+		return false, ErrorBad("Error validando la transacción:", err), nil
 
 	}
 

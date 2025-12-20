@@ -9,6 +9,7 @@ import (
 	. "my-app-tx/utils/models"
 	"net/http"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -25,6 +26,8 @@ func (b *BancoA) AddTrx(t *Transaction, ctx context.Context) (bool, ApiResponse,
 	log.Infof("addTrx: ", constants.BANCO_A)
 	t.Tipo = strings.ToUpper(t.Tipo)
 	t.Empresa = constants.BANCO_A
+	t.Fecha = time.Now()
+	t.Estado = constants.STATE_TRX_ACTIVE
 
 	// Validar la transacción antes de insertarla
 	err := t.ValidateCreate()
